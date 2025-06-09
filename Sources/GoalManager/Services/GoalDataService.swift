@@ -47,8 +47,29 @@ public class GoalDataService {
 	public func makeGoals(from goalsData: [(Int,Int,Int,String)]) -> [Goal] {
 		var goals: [Goal] = []
 		for (targetSteps, countedSteps, durationInMinutes, weekday) in goalsData {
-			goals.append(Goal(targetSteps: targetSteps, countedSteps: countedSteps, durationInMinutes: durationInMinutes, weekday: weekday, id: UUID()))
+			goals.append(Goal(id: UUID(), targetSteps: targetSteps, weekday: weekday, countedSteps: countedSteps, durationInSeconds: durationInMinutes))
 		}
 		return goals
+	}
+	
+	public func saveEmptyWeek(with name: String, for startDate:Date) throws {
+		var goals: [Goal] = []
+ 		let days = Week.generateWeekdays()
+		for day in days {
+			goals.append(Goal(id: UUID(), targetSteps: 0, weekday: day, countedSteps: 0, durationInSeconds: 0))
+		}
+		try addGoals(name: name, startDate: startDate, goals: goals)
+	}
+	
+	public func fetchGoal(startDate: Date, for day: String) throws -> Goal? {
+		let goalWeek = try fetchGoals(for: startDate)
+		let goal = goalWeek?.goalsForWeek.filter { goal in
+			return goal.weekday == day
+		}
+		return goal?.count == 1 ? goal?.first : nil
+	}
+	
+	public func saveContext() throws {
+		try context.save()
 	}
 }
